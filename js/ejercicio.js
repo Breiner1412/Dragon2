@@ -159,7 +159,8 @@ function mostrarModal(personaje) {
     crearElemento("p", {}, `Máx Ki: ${personaje.maxKi}`),
     crearElemento("p", {}, `Raza: ${personaje.race}`),
     crearElemento("p", {}, `Género: ${personaje.gender}`),
-    crearElemento("p", {}, `Afiliación: ${personaje.affiliation || "Desconocida"}`)
+    crearElemento("p", {}, `Afiliación: ${personaje.affiliation || "Desconocida"}`),
+    crearElemento("p", {}, `Descripción: ${personaje.description}`)
   ];
   infoContainer.append(...info);
   detalles.append(titulo, contenedorImagen, infoContainer);
