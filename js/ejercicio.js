@@ -6,24 +6,14 @@ const contenedor = document.getElementById("caracteres");
 const paginationContainer = document.getElementById("pagination");
 const modal = document.getElementById("modal");
 const detalles = document.getElementById("detalles-personaje");
-/**
- * Función auxiliar para crear elementos HTML.
- * @param {string} tipo - Tipo de elemento a crear (ej. "div", "p", "img").
- * @param {object} atributos - Objeto con atributos a asignar al elemento.
- * @param {string} contenido - Texto que se insertará en el elemento.
- * @returns {HTMLElement} - Elemento HTML creado.
- */
+
 const crearElemento = (tipo, atributos = {}, contenido = "") => {
   let elemento = document.createElement(tipo);
   Object.assign(elemento, atributos);
   if (contenido) elemento.textContent = contenido;
   return elemento;
 };
-/**
- * Función para mostrar los personajes en el contenedor.
- * Se crea una "tarjeta" para cada personaje con imagen e información.
- * @param {Array} personajes - Array de personajes obtenido de la API.
- */
+
 function mostrarPersonajes(personajes) {
   personajes.forEach(personaje => {
     // Se crea la tarjeta y se asigna un evento para mostrar detalles al hacer clic.
@@ -47,11 +37,6 @@ function mostrarPersonajes(personajes) {
     contenedor.appendChild(div);
   });
 };
-/**
- * Función para obtener los personajes desde la API.
- * Se construye la URL según la página actual y se renderiza la paginación.
- * @param {string} [url] - URL opcional para realizar la consulta.
- */
 async function obtenerPersonajes(url = `https://dragonball-api.com/api/characters?page=${paginaActual}&limit=${limite}`) {
   try {
     // Se realiza la solicitud a la API.
@@ -72,11 +57,7 @@ async function obtenerPersonajes(url = `https://dragonball-api.com/api/character
     console.error(error);
   };
 };
-/**
- * Función para renderizar la paginación.
- * Se crean botones para "Anterior", "Siguiente" y números de página, utilizando Bootstrap.
- * @param {object} meta - Objeto con la metadata de la respuesta de la API.
- */
+
 function renderPagination(meta) {
   const totalPages = meta.totalPages;
   const currentPage = meta.currentPage;
@@ -116,22 +97,14 @@ function renderPagination(meta) {
   // Se agrega la lista de paginación al contenedor.
   paginationContainer.appendChild(ul);
 };
-/**
- * Función para cargar una página específica.
- * Actualiza la variable global y solicita la API con la URL correspondiente.
- * @param {number} pageNumber - Número de página a cargar.
- */
+
 function loadPage(pageNumber) {
   paginaActual = pageNumber;
   const url = `https://dragonball-api.com/api/characters?page=${pageNumber}&limit=${limite}`;
   obtenerPersonajes(url);
 };
 
-/**
- * Función para obtener los detalles de un personaje.
- * Se solicita la API con el ID del personaje y se muestra el modal.
- * @param {number|string} id - ID del personaje.
- */
+
 async function obtenerDetallesPersonaje(id) {
   try {
     const respuesta = await fetch(`https://dragonball-api.com/api/characters/${id}`);
@@ -142,11 +115,7 @@ async function obtenerDetallesPersonaje(id) {
   };
 };
 
-/**
- * Función para mostrar el modal con los detalles de un personaje.
- * Se crean dinámicamente los elementos del modal y se insertan en el contenedor.
- * @param {object} personaje - Objeto con la información del personaje.
- */
+
 function mostrarModal(personaje) {
   detalles.innerHTML = "";
   let titulo = crearElemento("h2", {}, personaje.name);
