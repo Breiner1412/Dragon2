@@ -1,129 +1,115 @@
-// Variable global para controlar la página actual y cantidad de cartas por página
+// Variables globales y referencias al DOM
 let paginaActual = 1;
 const limite = 5;
-// Referencias a elementos del DOM
 const contenedor = document.getElementById("caracteres");
-const paginationContainer = document.getElementById("pagination");
+const contenedorPaginacion = document.getElementById("pagination");
 const modal = document.getElementById("modal");
 const detalles = document.getElementById("detalles-personaje");
+const btnCerrarModal = document.getElementById("btnCerrarModal");
 
+// Función utilitaria para crear elementos y asignar atributos
 const crearElemento = (tipo, atributos = {}, contenido = "") => {
-  let elemento = document.createElement(tipo);
-  Object.assign(elemento, atributos);
-  if (contenido) elemento.textContent = contenido;
-  return elemento;
+  const elem = document.createElement(tipo);
+  Object.assign(elem, atributos);
+  if (contenido) elem.textContent = contenido;
+  return elem;
 };
 
+// Función para limpiar un contenedor sin usar innerHTML
+const limpiarElemento = (el) => { while(el.firstChild) el.removeChild(el.firstChild); };
+
+// Muestra las tarjetas de personajes en el contenedor principal
 function mostrarPersonajes(personajes) {
   personajes.forEach(personaje => {
-    // Se crea la tarjeta y se asigna un evento para mostrar detalles al hacer clic.
-    let div = crearElemento("div", {
+    const tarjeta = crearElemento("div", {
       className: "personaje",
       onclick: () => obtenerDetallesPersonaje(personaje.id)
     });
-    // Se establece un fondo decorativo.
-    div.style.background = `url("img/Fondo.jfif") center/cover no-repeat`;
-    // Se crea la imagen del personaje.
-    let img = crearElemento("img", { src: personaje.image, alt: personaje.name });
-    // Se crean párrafos con la información del personaje.
-    let nombre = crearElemento("p", { className: "info" }, `Nombre: ${personaje.name}`);
-    let raza = crearElemento("p", { className: "info" }, `Raza: ${personaje.race || "Desconocida"}`);
-    let genero = crearElemento("p", { className: "info" }, `Género: ${personaje.gender || "No especificado"}`);
-    let poder = crearElemento("p", { className: "ki" }, `Poder: ${personaje.ki || "Desconocido"}`);
-    let afiliacion = crearElemento("p", { className: "afiliacion" }, `Afiliación: ${personaje.affiliation || "Ninguna"}`);
-    // Se agregan la imagen y la información a la tarjeta.
-    div.append(img, nombre, raza, genero, poder, afiliacion);
-    // Se inserta la tarjeta en el contenedor principal.
-    contenedor.appendChild(div);
+    tarjeta.style.background = 'url("img/Fondo.jfif") center/cover no-repeat';
+    
+    const imagen = crearElemento("img", { src: personaje.image, alt: personaje.name });
+    const infoNombre = crearElemento("p", { className: "info" }, `Nombre: ${personaje.name}`);
+    const infoRaza = crearElemento("p", { className: "info" }, `Raza: ${personaje.race || "Desconocida"}`);
+    const infoGenero = crearElemento("p", { className: "info" }, `Género: ${personaje.gender || "No especificado"}`);
+    const infoKi = crearElemento("p", { className: "ki" }, `Poder: ${personaje.ki || "Desconocido"}`);
+    const infoAfiliacion = crearElemento("p", { className: "afiliacion" }, `Afiliación: ${personaje.affiliation || "Ninguna"}`);
+    
+    tarjeta.append(imagen, infoNombre, infoRaza, infoGenero, infoKi, infoAfiliacion);
+    contenedor.appendChild(tarjeta);
   });
-};
+}
+
+// Función asíncrona para obtener personajes con paginación
 async function obtenerPersonajes(url = `https://dragonball-api.com/api/characters?page=${paginaActual}&limit=${limite}`) {
   try {
-    // Se realiza la solicitud a la API.
     const respuesta = await fetch(url);
     if (!respuesta.ok) throw new Error("Error al obtener los personajes");
-    
-    // Se obtiene la respuesta en formato JSON.
     const { items, meta } = await respuesta.json();
-    
-    // Se limpia el contenedor de personajes.
-    contenedor.innerHTML = "";
-    // Se muestran los personajes en pantalla.
+    limpiarElemento(contenedor);
     mostrarPersonajes(items);
-    
-    // Se renderiza la paginación utilizando la metadata.
-    renderPagination(meta);
+    renderizarPaginacion(meta);
   } catch (error) {
     console.error(error);
-  };
-};
+  }
+}
 
-function renderPagination(meta) {
-  const totalPages = meta.totalPages;
-  const currentPage = meta.currentPage;
-  // Se limpia el contenedor de paginación.
-  paginationContainer.innerHTML = "";
-  // Se crea una lista (<ul>) con clases de Bootstrap para la paginación.
+// Renderiza el paginador basado en la metadata
+function renderizarPaginacion(meta) {
+  const { totalPages, currentPage } = meta;
+  limpiarElemento(contenedorPaginacion);
   const ul = crearElemento("ul", { className: "pagination justify-content-center" });
-  // Botón "Anterior": se desactiva si se está en la primera página.
-  const liPrev = crearElemento("li", { className: `page-item ${currentPage === 1 ? 'disabled' : ''}` });
-  const aPrev = crearElemento("a", { className: "page-link", href: "#" }, "Anterior");
-  aPrev.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (currentPage > 1) loadPage(currentPage - 1);
-  });
-  liPrev.appendChild(aPrev);
-  ul.appendChild(liPrev);
-  // Botones numerados para cada página.
+  
+  const liAnterior = crearElemento("li", { className: `page-item ${currentPage === 1 ? "disabled" : ""}` });
+  const aAnterior = crearElemento("a", { className: "page-link", href: "#" }, "Anterior");
+  aAnterior.addEventListener("click", e => { e.preventDefault(); if (currentPage > 1) cargarPagina(currentPage - 1); });
+  liAnterior.appendChild(aAnterior);
+  ul.appendChild(liAnterior);
+  
   for (let i = 1; i <= totalPages; i++) {
-    const li = crearElemento("li", { className: `page-item ${i === currentPage ? 'active' : ''}` });
+    const li = crearElemento("li", { className: `page-item ${i === currentPage ? "active" : ""}` });
     const a = crearElemento("a", { className: "page-link", href: "#" }, i);
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      loadPage(i);
-    });
+    a.addEventListener("click", e => { e.preventDefault(); cargarPagina(i); });
     li.appendChild(a);
     ul.appendChild(li);
-  };
-  // Botón "Siguiente": se desactiva si se está en la última página.
-  const liNext = crearElemento("li", { className: `page-item ${currentPage === totalPages ? 'disabled' : ''}` });
-  const aNext = crearElemento("a", { className: "page-link", href: "#" }, "Siguiente");
-  aNext.addEventListener("click", (e) => {
-    e.preventDefault();
-    if (currentPage < totalPages) loadPage(currentPage + 1);
-  });
-  liNext.appendChild(aNext);
-  ul.appendChild(liNext);
-  // Se agrega la lista de paginación al contenedor.
-  paginationContainer.appendChild(ul);
-};
+  }
+  
+  const liSiguiente = crearElemento("li", { className: `page-item ${currentPage === totalPages ? "disabled" : ""}` });
+  const aSiguiente = crearElemento("a", { className: "page-link", href: "#" }, "Siguiente");
+  aSiguiente.addEventListener("click", e => { e.preventDefault(); if (currentPage < totalPages) cargarPagina(currentPage + 1); });
+  liSiguiente.appendChild(aSiguiente);
+  ul.appendChild(liSiguiente);
+  
+  contenedorPaginacion.appendChild(ul);
+}
 
-function loadPage(pageNumber) {
-  paginaActual = pageNumber;
-  const url = `https://dragonball-api.com/api/characters?page=${pageNumber}&limit=${limite}`;
+// Cambia la página actual y carga los personajes correspondientes
+function cargarPagina(nuevaPagina) {
+  paginaActual = nuevaPagina;
+  const url = `https://dragonball-api.com/api/characters?page=${nuevaPagina}&limit=${limite}`;
   obtenerPersonajes(url);
-};
+}
 
-
+// Obtiene y muestra detalles de un personaje en el modal
 async function obtenerDetallesPersonaje(id) {
   try {
     const respuesta = await fetch(`https://dragonball-api.com/api/characters/${id}`);
     if (!respuesta.ok) throw new Error("Error al obtener el personaje");
-    mostrarModal(await respuesta.json());
+    const personaje = await respuesta.json();
+    mostrarModal(personaje);
   } catch (error) {
     console.error(error);
-  };
-};
-
+  }
+}
 
 function mostrarModal(personaje) {
-  detalles.innerHTML = "";
-  let titulo = crearElemento("h2", {}, personaje.name);
-  let img = crearElemento("img", { src: personaje.image, alt: personaje.name });
-  let contenedorImagen = crearElemento("div", { className: "imagen-personaje" });
-  contenedorImagen.appendChild(img);
-  let infoContainer = crearElemento("div", { className: "info-personaje" });
-  let info = [
+  limpiarElemento(detalles);
+  const titulo = crearElemento("h2", {}, personaje.name);
+  const contImagen = crearElemento("div", { className: "imagen-personaje" });
+  const img = crearElemento("img", { src: personaje.image, alt: personaje.name });
+  contImagen.appendChild(img);
+  
+  const contInfo = crearElemento("div", { className: "info-personaje" });
+  const infoItems = [
     crearElemento("p", {}, `Ki: ${personaje.ki}`),
     crearElemento("p", {}, `Máx Ki: ${personaje.maxKi}`),
     crearElemento("p", {}, `Raza: ${personaje.race}`),
@@ -131,47 +117,43 @@ function mostrarModal(personaje) {
     crearElemento("p", {}, `Afiliación: ${personaje.affiliation || "Desconocida"}`),
     crearElemento("p", {}, `Descripción: ${personaje.description}`)
   ];
-  infoContainer.append(...info);
-  detalles.append(titulo, contenedorImagen, infoContainer);
+  contInfo.append(...infoItems);
+  
+  detalles.append(titulo, contImagen, contInfo);
+  
   if (personaje.originPlanet) {
-    let planeta = crearElemento("div", { className: "contenedor-planeta" });
-    let tituloPlaneta = crearElemento("h3", {}, "Planeta de Origen:");
-    let imgPlaneta = crearElemento("img", { src: personaje.originPlanet.image, alt: personaje.originPlanet.name, width: 120 });
-    let descPlaneta = crearElemento("p", {}, `${personaje.originPlanet.name} - ${personaje.originPlanet.description}`);
-    planeta.append(tituloPlaneta, imgPlaneta, descPlaneta);
-    detalles.appendChild(planeta);
-  };
-  if (personaje.transformations && personaje.transformations.length > 0) {
-    let contenedorTrans = crearElemento("div", { className: "contenedor-transformaciones" });
-    let tituloTrans = crearElemento("h3", {}, "Transformaciones:");
-    contenedorTrans.appendChild(tituloTrans);
+    const contPlaneta = crearElemento("div", { className: "contenedor-planeta" });
+    contPlaneta.append(
+      crearElemento("h3", {}, "Planeta de Origen:"),
+      crearElemento("img", { src: personaje.originPlanet.image, alt: personaje.originPlanet.name, width: 120 }),
+      crearElemento("p", {}, `${personaje.originPlanet.name} - ${personaje.originPlanet.description}`)
+    );
+    detalles.appendChild(contPlaneta);
+  }
+  
+  if (personaje.transformations?.length) {
+    const contTrans = crearElemento("div", { className: "contenedor-transformaciones" });
+    contTrans.appendChild(crearElemento("h3", {}, "Transformaciones:"));
     personaje.transformations.forEach(trans => {
-      let divTrans = crearElemento("div", { className: "transformacion" });
-      let imgTrans = crearElemento("img", { src: trans.image, width: 80, alt: trans.name });
-      let textoTrans = crearElemento("p", {}, `${trans.name} (Ki: ${trans.ki})`);
-      divTrans.append(imgTrans, textoTrans);
-      contenedorTrans.appendChild(divTrans);
+      const divTrans = crearElemento("div", { className: "transformacion" });
+      divTrans.append(
+        crearElemento("img", { src: trans.image, width: 80, alt: trans.name }),
+        crearElemento("p", {}, `${trans.name} (Ki: ${trans.ki})`)
+      );
+      contTrans.appendChild(divTrans);
     });
-    detalles.appendChild(contenedorTrans);
-  };
+    detalles.appendChild(contTrans);
+  }
+  
   modal.classList.add("activo");
   document.body.classList.add("modal-abierto");
-};
-/**
- * Función para cerrar el modal.
- * Quita la clase "activo" y restaura el scroll en el body.
- */
+}
+
 function cerrarModal() {
   modal.classList.remove("activo");
   document.body.classList.remove("modal-abierto");
-};
-// Cierra el modal si se hace clic fuera del contenido.
-window.addEventListener("click", (evento) => {
-  if (evento.target === modal) {
-    cerrarModal();
-  };
-});
-// Inicializa la carga de personajes cuando el documento está listo.
-document.addEventListener("DOMContentLoaded", () => {
-  obtenerPersonajes();
-});
+}
+btnCerrarModal.addEventListener("click", cerrarModal);
+window.addEventListener("click", e => { if (e.target === modal) cerrarModal(); });
+
+document.addEventListener("DOMContentLoaded", () => { obtenerPersonajes(); });

@@ -28,8 +28,8 @@ html ::-webkit-scrollbar,
     border: 2px solid #ff9800;
     padding: 15px;
     border-radius: 10px;
-    flex: 1 1 calc(25% - 30px);
-    max-width: 18%;
+    flex: 1 1 calc(20% - 30px);  /* 5 tarjetas en línea en pantallas grandes */
+    max-width: calc(20% - 30px);
     height: 550px;
     box-sizing: border-box;
     position: relative;
@@ -126,108 +126,74 @@ html ::-webkit-scrollbar,
     transform: scale(1.1);
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.cerrar {
-    font-size: 24px;
-    cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    color: white;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.cerrar:hover {
-    color: red;
-    transform: scale(1.2);
-}
-
-.btn-cargar {
+/* Paginador */
+.pagination {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    border-radius: 8px;
+    padding: 10px 15px;
     margin: 20px auto;
-    display: block;
+    justify-content: center;
+    align-items: center;
+}
+.pagination .page-item {
+    margin: 0 5px;
+}
+.pagination .page-link {
     background-color: #ff9800;
     border: none;
-    padding: 10px 20px;
-    font-size: 18px;
-    color: white;
-    border-radius: 8px;
-    transition: background 0.3s ease;
+    color: #fff;
+    border-radius: 4px;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
 }
-
-.btn-cargar:hover {
+.pagination .page-link:hover {
     background-color: #e68900;
 }
-
-.contenedor-transformaciones {
-    text-align: center;
+.pagination .page-item.active .page-link {
+    background-color: #0056b3;
+    color: #fff;
+}
+.pagination .page-item.disabled .page-link {
+    background-color: #555;
+    color: #ccc;
+    pointer-events: none;
 }
 
-.contenedor-transformaciones img {
-    width: 80px;
-    margin: 5px;
-    border-radius: 8px;
-}
-
-@media (max-width: 1024px) {
+/* Responsividad: ajusta el número de tarjetas según el ancho de la pantalla */
+@media (max-width: 1200px) {
     .personaje {
-        flex: 1 1 calc(33.33% - 30px);
-        max-width: 33.33%;
+        flex: 1 1 calc(25% - 30px);
+        max-width: calc(25% - 30px);
     }
 }
-
+@media (max-width: 992px) {
+    .personaje {
+        flex: 1 1 calc(33.33% - 30px);
+        max-width: calc(33.33% - 30px);
+    }
+}
 @media (max-width: 768px) {
     .personaje {
         flex: 1 1 calc(50% - 30px);
-        max-width: 50%;
+        max-width: calc(50% - 30px);
     }
 }
-
-@media (max-width: 480px) {
+@media (max-width: 576px) {
     .personaje {
         flex: 1 1 100%;
         max-width: 100%;
     }
 }
 
-.logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
-
-.logo-container img {
-    width: 50%;
-    height: auto;
-}
-
-@media (max-width: 768px) {
-    .logo-container img {
-        width: 50%;
-    }
-}
-
-@media (max-width: 480px) {
-    .logo-container img {
-        width: 50%;
-    }
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
